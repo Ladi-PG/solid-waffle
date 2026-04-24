@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Onboarding Flow v2 — Multi-Coach Architecture (HC · Trades · Tech)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --ink: #121926; --ink-2: #364152; --muted: #697586;
+    --line: #cdd5df; --bg: #f8fafc; --card: #ffffff;
+    --accent: #2f5de8; --accent-soft: #eaf0ff;
+    --seg-settle: #0f766e; --seg-settle-soft: #e6f4f2;
+    --seg-job: #b45309; --seg-job-soft: #fdf3e1;
+    --seg-hc: #9333ea; --seg-hc-soft: #f3eafd;
+    --seg-trades: #c2410c; --seg-trades-soft: #fde7d9;
+    --seg-tech: #0369a1; --seg-tech-soft: #dff0fb;
+    --seg-vet: #b91c1c; --seg-vet-soft: #fde8e8;
+    --seg-explore: #475569; --seg-explore-soft: #eef2f6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    line-height:1.5; font-size:15px; }
+  .wrap { max-width:1320px; margin:0 auto; padding:40px 32px 80px; }
+  header { border-bottom:1px solid var(--line); padding-bottom:24px; margin-bottom:32px; }
+  .eyebrow { font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  h1 { font-size:32px; line-height:1.15; margin:0 0 8px; font-weight:700; letter-spacing:-0.01em; }
+  .sub { color:var(--ink-2); font-size:16px; max-width:900px; }
+  .meta { margin-top:12px; font-size:13px; color:var(--muted); }
+  h2 { font-size:22px; margin:48px 0 8px; font-weight:700; letter-spacing:-0.01em; }
+  h2 .num { display:inline-block; width:28px; height:28px; background:var(--ink); color:#fff;
+    border-radius:6px; text-align:center; line-height:28px; font-size:14px; margin-right:10px;
+    vertical-align:middle; font-weight:600; }
+  h3 { font-size:17px; margin:20px 0 8px; font-weight:600; }
+  p.lead { color:var(--ink-2); max-width:960px; margin:4px 0 20px; }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:20px 22px; }
+  .diagram-card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:16px; overflow-x:auto; margin-top:12px; }
+  .legend { display:flex; flex-wrap:wrap; gap:12px; margin:12px 0 16px; font-size:13px; color:var(--ink-2); }
+  .legend .chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px;
+    border-radius:20px; background:#fff; border:1px solid var(--line); }
+  .chip .dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line);
+    border-radius:10px; overflow:hidden; font-size:14px; }
+  th, td { text-align:left; padding:10px 12px; vertical-align:top; border-bottom:1px solid var(--line); }
+  th { background:#f1f5f9; font-weight:600; font-size:13px; letter-spacing:0.02em; }
+  tr:last-child td { border-bottom:0; }
+  td.seg { font-weight:600; white-space:nowrap; }
+  .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11.5px;
+    font-weight:600; letter-spacing:0.02em; }
+  .pill.settle { background:var(--seg-settle-soft); color:var(--seg-settle); }
+  .pill.job    { background:var(--seg-job-soft); color:var(--seg-job); }
+  .pill.hc     { background:var(--seg-hc-soft); color:var(--seg-hc); }
+  .pill.trades { background:var(--seg-trades-soft); color:var(--seg-trades); }
+  .pill.tech   { background:var(--seg-tech-soft); color:var(--seg-tech); }
+  .pill.vet    { background:var(--seg-vet-soft); color:var(--seg-vet); }
+  .pill.explore{ background:var(--seg-explore-soft); color:var(--seg-explore); }
+
+  .callout {
+    background:#fef9c3; border:1px solid #eab308; border-left:4px solid #ca8a04;
+    border-radius:8px; padding:14px 18px; margin:16px 0;
+  }
+  .callout .k { font-weight:700; color:#713f12; letter-spacing:0.04em; font-size:12px; text-transform:uppercase; }
+  .callout p { margin:6px 0 0; color:#422006; }
+
+  .twocol { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .threecol { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
+  ul.tight { margin:4px 0 0; padding-left:18px; } ul.tight li { margin:4px 0; }
+
+  .branch-detail {
+    background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px;
+  }
+  .branch-detail .badge {
+    display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700;
+    letter-spacing:0.04em; text-transform:uppercase; margin-bottom:8px;
+  }
+  .branch-detail.trades { border-top:4px solid var(--seg-trades); }
+  .branch-detail.trades .badge { background:var(--seg-trades-soft); color:var(--seg-trades); }
+  .branch-detail.tech { border-top:4px solid var(--seg-tech); }
+  .branch-detail.tech .badge { background:var(--seg-tech-soft); color:var(--seg-tech); }
+  .branch-detail h4 { margin:6px 0 8px; font-size:17px; }
+  .branch-detail .qs { font-size:13.5px; color:var(--ink-2); }
+  .branch-detail .qs strong { color:var(--ink); }
+
+  .footer-note { margin-top:40px; padding-top:16px; border-top:1px dashed var(--line);
+    font-size:12.5px; color:var(--muted); }
+
+  @media (max-width: 900px) {
+    .twocol, .threecol { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Welcome Coach + Healthcare Coach + Trades Coach + Tech Coach</div>
+  <h1>Onboarding Flow v2 — Multi-Coach Architecture</h1>
+  <div class="sub">Extending v1 to scale across a growing coach family. The key change: a 2-step intent fork that accepts N coaches without bloating the first screen — and a shared "credentialed abroad" branch that unifies IEHP, Internationally Trained Tradespeople, and Internationally Experienced Tech Professionals.</div>
+  <div class="meta">Prepared for Ladi Onasanya · PeaceGeeks · April 2026 · Companion to v1 (<em>WC_HC_Onboarding_Flow_v1.html</em>)</div>
+</header>
+
+<!-- SECTION 1: THE ARCHITECTURAL CHOICE -->
+<div class="section">
+  <h2><span class="num">1</span>The architectural choice you're making</h2>
+  <p class="lead">When you ship Trades Coach (and maybe Tech Coach), the 5-option intent fork from v1 stops working. You have three architectural options, and picking one now is much cheaper than picking one later.</p>
+
+  <table>
+    <thead>
+      <tr><th style="width:220px">Option</th><th>How it scales</th><th>Trade-off</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>A · Flat fork</strong><br><span style="color:var(--muted);font-size:12.5px">Add segment cards to S2</span></td>
+        <td>Each new coach adds a card to the intent fork. 5 → 7 → 9 segments over time.</td>
+        <td>Violates Hick's Law — completion rate drops ~4–6% per added top-level option past 5. Visual crowding on mobile. Over-weights "choose the coach" relative to user's actual question ("help me find work").</td>
+      </tr>
+      <tr>
+        <td><strong>B · 2-step fork</strong> <span style="color:var(--ok);font-weight:700">(recommended)</span><br><span style="color:var(--muted);font-size:12.5px">Goal first, then field</span></td>
+        <td>S2 stays at 5 goal-oriented options. S2b ("Which field?") appears only for job/credentialing goals and holds N coach cards.</td>
+        <td>+1 screen for job seekers. In exchange: unlimited coach growth without touching S2; matches how users actually think ("I want work" → "doing what?").</td>
+      </tr>
+      <tr>
+        <td><strong>C · Coach-as-tool</strong><br><span style="color:var(--muted);font-size:12.5px">Hide coaches behind "Job seeker"</span></td>
+        <td>No visible coach selection — field-of-interest autocomplete routes silently to HC/TC/TechC.</td>
+        <td>Fastest onboarding, but each coach loses its brand moment — users never consciously "enter Healthcare Coach." Hurts SEO, partner co-marketing, and funder storytelling where coaches are named products.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="k">Recommendation</div>
+    <p><strong>Option B · 2-step fork.</strong> It's the only option that scales cleanly to 4+ coaches while preserving each coach's identity as a named product. The one extra screen only fires for job/credential seekers (the segments with the strongest motivation to persist), so the drop-off cost is concentrated where completion is already highest.</p>
+  </div>
+</div>
+
+<!-- SECTION 2: UPDATED FLOW DIAGRAM -->
+<div class="section">
+  <h2><span class="num">2</span>Updated flow diagram (v2)</h2>
+  <p class="lead">Changes from v1 shown in dashed outlines. Same 6-screen target for settlement/veteran/explorer branches; 7 screens for job/credential seekers (one extra tap at the coach selector).</p>
+
+  <div class="legend">
+    <span class="chip"><span class="dot" style="background:#2f5de8"></span>Universal</span>
+    <span class="chip"><span class="dot" style="background:#0f766e"></span>Settlement</span>
+    <span class="chip"><span class="dot" style="background:#b45309"></span>Job seeker (general)</span>
+    <span class="chip"><span class="dot" style="background:#9333ea"></span>Healthcare (HC)</span>
+    <span class="chip"><span class="dot" style="background:#c2410c"></span>Trades (TC)</span>
+    <span class="chip"><span class="dot" style="background:#0369a1"></span>Tech (TechC)</span>
+    <span class="chip"><span class="dot" style="background:#b91c1c"></span>Veteran</span>
+    <span class="chip"><span class="dot" style="background:#475569"></span>Explorer</span>
+  </div>
+
+  <div class="diagram-card">
+<svg viewBox="0 0 1280 1650" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrL" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .nt { font: 600 14px -apple-system,"Segoe UI",Arial; fill:#121926; }
+      .nm { font: 500 12px -apple-system,"Segoe UI",Arial; fill:#475569; }
+      .q  { font: 400 11.5px -apple-system,"Segoe UI",Arial; fill:#364152; }
+      .sn { font: 700 11px -apple-system,"Segoe UI",Arial; fill:#fff; letter-spacing:0.04em; }
+      .sl { font: 700 11px -apple-system,"Segoe UI",Arial; letter-spacing:0.04em; }
+      .cn { stroke:#94a3b8; stroke-width:1.5; fill:none; }
+      .cs { stroke:#475569; stroke-width:2; fill:none; }
+      .new { stroke-dasharray:6 4; }
+    </style>
+  </defs>
+
+  <!-- S1 LANDING -->
+  <g>
+    <rect x="500" y="20" width="280" height="70" rx="10" fill="#eaf0ff" stroke="#2f5de8" stroke-width="1.5"/>
+    <rect x="500" y="20" width="36" height="22" rx="4" fill="#2f5de8"/>
+    <text x="518" y="35" class="sn" text-anchor="middle">S1</text>
+    <text x="544" y="38" class="nt">Landing · Language</text>
+    <text x="516" y="58" class="nm">12-language picker · "Get started" or browse</text>
+    <text x="516" y="75" class="q">Anonymous session starts here</text>
+  </g>
+  <path d="M 640 90 L 640 115" class="cs" marker-end="url(#arr)"/>
+
+  <!-- S2 INTENT FORK -->
+  <g>
+    <rect x="430" y="120" width="420" height="108" rx="10" fill="#eaf0ff" stroke="#2f5de8" stroke-width="1.5"/>
+    <rect x="430" y="120" width="36" height="22" rx="4" fill="#2f5de8"/>
+    <text x="448" y="135" class="sn" text-anchor="middle">S2</text>
+    <text x="474" y="138" class="nt">What brings you here today?</text>
+    <text x="446" y="162" class="nm">Goal-oriented fork · stays at 5 cards regardless of coach count</text>
+    <text x="446" y="182" class="q">A. Settle in Canada · B. Find work · C. Use credentials from abroad</text>
+    <text x="446" y="200" class="q">D. Military transition · E. Not sure yet</text>
+    <text x="446" y="218" class="q" style="fill:#2f5de8;font-weight:600">C is the shared path for IEHP / Trades-trained / Tech-credentialed abroad</text>
+  </g>
+
+  <!-- Fan out: Settle left, Job&Credential center, Vet right, Explore far right -->
+  <path d="M 640 228 L 640 250 L 160 250 L 160 275" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 640 228 L 640 280" class="cs new" marker-end="url(#arr)"/>
+  <path d="M 640 228 L 640 250 L 1020 250 L 1020 275" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 640 228 L 640 250 L 1180 250 L 1180 275" class="cn" marker-end="url(#arrL)"/>
+
+  <!-- Settle direct (skips S2b) -->
+  <g>
+    <rect x="60" y="275" width="200" height="32" rx="6" fill="#0f766e"/>
+    <text x="160" y="295" class="sl" fill="#fff" text-anchor="middle">SETTLEMENT (A)</text>
+  </g>
+
+  <!-- S2b COACH SELECTOR (new — center) -->
+  <g>
+    <rect x="430" y="280" width="420" height="120" rx="10" fill="#fff" stroke="#2f5de8" stroke-width="2" class="new" stroke-dasharray="6 4"/>
+    <rect x="430" y="280" width="56" height="22" rx="4" fill="#2f5de8"/>
+    <text x="458" y="295" class="sn" text-anchor="middle">S2b · NEW</text>
+    <text x="498" y="298" class="nt">Which field are you focused on?</text>
+    <text x="446" y="322" class="nm">Appears only if B (find work) or C (credentialed abroad) in S2</text>
+    <text x="446" y="342" class="q">· Healthcare · Trades · Tech · Other / general · Not sure yet</text>
+    <text x="446" y="360" class="q" style="fill:#2f5de8;font-weight:600">This is where new coaches dock in — add a card, no S2 changes</text>
+    <text x="446" y="380" class="q" style="fill:#475569">If S2=C, card labels shift: "Healthcare (IEHP)", "Skilled trades", "Tech (foreign experience)"</text>
+  </g>
+
+  <!-- Vet + Explore direct labels -->
+  <g>
+    <rect x="920" y="275" width="200" height="32" rx="6" fill="#b91c1c"/>
+    <text x="1020" y="295" class="sl" fill="#fff" text-anchor="middle">VETERAN (D)</text>
+  </g>
+  <g>
+    <rect x="1080" y="275" width="180" height="32" rx="6" fill="#475569"/>
+    <text x="1170" y="295" class="sl" fill="#fff" text-anchor="middle">EXPLORER (E)</text>
+  </g>
+
+  <!-- Fan from S2b to 4 coach branches at y=430 -->
+  <path d="M 640 400 L 640 420 L 370 420 L 370 445" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 640 400 L 640 420 L 540 420 L 540 445" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 640 400 L 640 445" class="cs" marker-end="url(#arr)"/>
+  <path d="M 640 400 L 640 420 L 740 420 L 740 445" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 640 400 L 640 420 L 900 420 L 900 445" class="cn" marker-end="url(#arrL)"/>
+
+  <!-- coach labels -->
+  <g><rect x="290" y="445" width="160" height="30" rx="6" fill="#b45309"/>
+    <text x="370" y="464" class="sl" fill="#fff" text-anchor="middle">JOB · GENERAL</text></g>
+  <g><rect x="460" y="445" width="160" height="30" rx="6" fill="#9333ea"/>
+    <text x="540" y="464" class="sl" fill="#fff" text-anchor="middle">HEALTHCARE · HC</text></g>
+  <g><rect x="630" y="445" width="160" height="30" rx="6" fill="#c2410c"/>
+    <text x="710" y="464" class="sl" fill="#fff" text-anchor="middle">TRADES · TC</text></g>
+  <g><rect x="800" y="445" width="160" height="30" rx="6" fill="#0369a1"/>
+    <text x="880" y="464" class="sl" fill="#fff" text-anchor="middle">TECH · TechC</text></g>
+
+  <!-- S3 UNIVERSAL CONTEXT - same for all -->
+  <g>
+    <rect x="60" y="495" width="1200" height="50" rx="8" fill="#eaf0ff" stroke="#2f5de8" stroke-width="1.5"/>
+    <rect x="60" y="495" width="36" height="22" rx="4" fill="#2f5de8"/>
+    <text x="78" y="510" class="sn" text-anchor="middle">S3</text>
+    <text x="104" y="513" class="nt">Universal context · province/city · arrival status · optional name</text>
+    <text x="104" y="533" class="q" fill="#2f5de8">Captured for every user regardless of segment; funder-reportable minimum</text>
+  </g>
+
+  <!-- connectors from all branches down through S3 to S4 rows -->
+  <path d="M 160 307 L 160 570" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 370 475 L 370 570" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 540 475 L 540 570" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 710 475 L 710 570" class="cs" marker-end="url(#arr)"/>
+  <path d="M 880 475 L 880 570" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 1020 307 L 1020 570" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 1170 307 L 1170 570" class="cn" marker-end="url(#arrL)"/>
+
+  <!-- S4 BRANCHES -->
+  <!-- Settlement -->
+  <g>
+    <rect x="60" y="570" width="200" height="260" rx="10" fill="#e6f4f2" stroke="#0f766e" stroke-width="1.5"/>
+    <rect x="60" y="570" width="36" height="22" rx="4" fill="#0f766e"/>
+    <text x="78" y="585" class="sn" text-anchor="middle">S4</text>
+    <text x="104" y="588" class="nt" fill="#0f766e">Settlement</text>
+    <text x="74" y="612" class="q">1. Top priorities (multi)</text>
+    <text x="74" y="628" class="q" fill="#475569">Housing · health · lang · work</text>
+    <text x="74" y="650" class="q">2. Language confidence</text>
+    <text x="74" y="672" class="q">3. Household composition</text>
+    <text x="74" y="694" class="q">4. Time in Canada</text>
+    <text x="74" y="730" class="q" fill="#0f766e" style="font-weight:700">Routes to:</text>
+    <text x="74" y="748" class="q">· Settlement hub</text>
+    <text x="74" y="763" class="q">· Housing / health guides</text>
+    <text x="74" y="778" class="q">· Language finder</text>
+    <text x="74" y="793" class="q">· Community &amp; partners</text>
+  </g>
+
+  <!-- Job · General -->
+  <g>
+    <rect x="280" y="570" width="180" height="260" rx="10" fill="#fdf3e1" stroke="#b45309" stroke-width="1.5"/>
+    <rect x="280" y="570" width="36" height="22" rx="4" fill="#b45309"/>
+    <text x="298" y="585" class="sn" text-anchor="middle">S4</text>
+    <text x="324" y="588" class="nt" fill="#b45309">Job · General</text>
+    <text x="294" y="612" class="q">1. Experience level</text>
+    <text x="294" y="634" class="q">2. Current employment</text>
+    <text x="294" y="656" class="q">3. Target role/industry</text>
+    <text x="294" y="678" class="q">4. Top barriers (multi)</text>
+    <text x="294" y="712" class="q" fill="#b45309" style="font-weight:700">Routes to:</text>
+    <text x="294" y="730" class="q">· Resume · Cover Letter</text>
+    <text x="294" y="745" class="q">· Soft Skills v2</text>
+    <text x="294" y="760" class="q">· Interview Practice v2</text>
+    <text x="294" y="775" class="q">· NOC Code Finder</text>
+    <text x="294" y="795" class="q">· Smart Job Tracker</text>
+  </g>
+
+  <!-- HC · IEHP -->
+  <g>
+    <rect x="480" y="570" width="180" height="260" rx="10" fill="#f3eafd" stroke="#9333ea" stroke-width="1.5"/>
+    <rect x="480" y="570" width="36" height="22" rx="4" fill="#9333ea"/>
+    <text x="498" y="585" class="sn" text-anchor="middle">S4</text>
+    <text x="524" y="588" class="nt" fill="#9333ea">Healthcare (HC)</text>
+    <text x="494" y="612" class="q">1. Profession (regulated)</text>
+    <text x="494" y="634" class="q">2. Country trained in</text>
+    <text x="494" y="656" class="q">3. Credentialing status</text>
+    <text x="494" y="678" class="q">4. Immigration status</text>
+    <text x="494" y="700" class="q">5. Target province</text>
+    <text x="494" y="724" class="q" fill="#9333ea" style="font-weight:700">Routes to:</text>
+    <text x="494" y="742" class="q">· HC pathway builder</text>
+    <text x="494" y="757" class="q">· Cost &amp; time compare</text>
+    <text x="494" y="772" class="q">· Windmill · WES · bridging</text>
+    <text x="494" y="787" class="q">· Eligibility-filtered jobs</text>
+  </g>
+
+  <!-- TRADES (new) -->
+  <g>
+    <rect x="680" y="570" width="180" height="260" rx="10" fill="#fde7d9" stroke="#c2410c" stroke-width="1.5" class="new" stroke-dasharray="6 4"/>
+    <rect x="680" y="570" width="60" height="22" rx="4" fill="#c2410c"/>
+    <text x="710" y="585" class="sn" text-anchor="middle">S4 · NEW</text>
+    <text x="748" y="588" class="nt" fill="#c2410c">Trades (TC)</text>
+    <text x="694" y="612" class="q">1. Which trade (Red Seal?)</text>
+    <text x="694" y="634" class="q">2. Apprenticeship status</text>
+    <text x="694" y="649" class="q" fill="#475569">None · looking · registered · IP</text>
+    <text x="694" y="671" class="q">3. Target province</text>
+    <text x="694" y="693" class="q">4. Foreign-trained? (Y→+2Q)</text>
+    <text x="694" y="708" class="q" fill="#475569">Country · qualification status</text>
+    <text x="694" y="730" class="q" fill="#c2410c" style="font-weight:700">Routes to:</text>
+    <text x="694" y="748" class="q">· Trade certification path</text>
+    <text x="694" y="763" class="q">· Apprenticeship finder</text>
+    <text x="694" y="778" class="q">· Skilled Trades Ontario</text>
+    <text x="694" y="793" class="q">· Union / employer partners</text>
+  </g>
+
+  <!-- TECH (new) -->
+  <g>
+    <rect x="880" y="570" width="180" height="260" rx="10" fill="#dff0fb" stroke="#0369a1" stroke-width="1.5" class="new" stroke-dasharray="6 4"/>
+    <rect x="880" y="570" width="60" height="22" rx="4" fill="#0369a1"/>
+    <text x="910" y="585" class="sn" text-anchor="middle">S4 · NEW</text>
+    <text x="948" y="588" class="nt" fill="#0369a1">Tech (TechC)</text>
+    <text x="894" y="612" class="q">1. Tech field</text>
+    <text x="894" y="627" class="q" fill="#475569">SWE · data · cyber · IT · design</text>
+    <text x="894" y="649" class="q">2. Experience level</text>
+    <text x="894" y="671" class="q">3. Portfolio / code state</text>
+    <text x="894" y="693" class="q">4. Canadian experience (Y/N)</text>
+    <text x="894" y="715" class="q">5. Top barrier</text>
+    <text x="894" y="735" class="q" fill="#0369a1" style="font-weight:700">Routes to:</text>
+    <text x="894" y="753" class="q">· Portfolio &amp; certs coach</text>
+    <text x="894" y="768" class="q">· Tech-specific resume/ATS</text>
+    <text x="894" y="783" class="q">· NPower Canada · bootcamps</text>
+    <text x="894" y="798" class="q">· Employer partner tiles</text>
+  </g>
+
+  <!-- Vet + Explorer (right, shorter) -->
+  <g>
+    <rect x="1080" y="570" width="180" height="125" rx="10" fill="#fde8e8" stroke="#b91c1c" stroke-width="1.5"/>
+    <rect x="1080" y="570" width="36" height="22" rx="4" fill="#b91c1c"/>
+    <text x="1098" y="585" class="sn" text-anchor="middle">S4</text>
+    <text x="1124" y="588" class="nt" fill="#b91c1c">Veteran</text>
+    <text x="1094" y="612" class="q">1. Service type + release</text>
+    <text x="1094" y="634" class="q">2. Healthcare interest?</text>
+    <text x="1094" y="656" class="q">3. Target role / civilian goal</text>
+    <text x="1094" y="680" class="q" fill="#b91c1c" style="font-weight:700">Routes to HC vet lens OR TC/TechC</text>
+  </g>
+
+  <g>
+    <rect x="1080" y="710" width="180" height="120" rx="10" fill="#eef2f6" stroke="#475569" stroke-width="1.5"/>
+    <rect x="1080" y="710" width="36" height="22" rx="4" fill="#475569"/>
+    <text x="1098" y="725" class="sn" text-anchor="middle">S4</text>
+    <text x="1124" y="728" class="nt" fill="#475569">Explorer</text>
+    <text x="1094" y="752" class="q">1. Top 3 interests (light)</text>
+    <text x="1094" y="774" class="q">2. "Why not sure?" (optional)</text>
+    <text x="1094" y="798" class="q" fill="#475569" style="font-weight:700">Low-pressure home; learns via clicks</text>
+  </g>
+
+  <!-- Converge to S5 -->
+  <path d="M 160 830 L 160 860 L 640 860 L 640 880" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 370 830 L 370 860 L 640 860 L 640 880" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 540 830 L 540 860 L 640 860 L 640 880" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 710 830 L 710 880" class="cs" marker-end="url(#arr)"/>
+  <path d="M 880 830 L 880 860 L 640 860 L 640 880" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 1170 695 L 1170 860 L 640 860 L 640 880" class="cn" marker-end="url(#arrL)"/>
+  <path d="M 1170 830 L 1170 860 L 640 860 L 640 880" class="cn" marker-end="url(#arrL)"/>
+
+  <!-- S5 optional equity -->
+  <g>
+    <rect x="380" y="880" width="520" height="80" rx="10" fill="#fff7ed" stroke="#b45309" stroke-dasharray="5 4" stroke-width="1.5"/>
+    <rect x="380" y="880" width="56" height="22" rx="4" fill="#b45309"/>
+    <text x="408" y="895" class="sn" text-anchor="middle">S5 · OPT</text>
+    <text x="446" y="898" class="nt">Optional: Community &amp; identity</text>
+    <text x="396" y="920" class="nm">Unlocks partner programs — women, refugee, Indigenous, disability, racialized</text>
+    <text x="396" y="942" class="q" fill="#b45309">Now also feeds: Women in Trades partners, NPower Canada, Windmill Trades Loan</text>
+  </g>
+  <path d="M 640 960 L 640 990" class="cs" marker-end="url(#arr)"/>
+
+  <!-- S6 save -->
+  <g>
+    <rect x="440" y="995" width="400" height="70" rx="10" fill="#eaf0ff" stroke="#2f5de8" stroke-width="1.5"/>
+    <rect x="440" y="995" width="36" height="22" rx="4" fill="#2f5de8"/>
+    <text x="458" y="1010" class="sn" text-anchor="middle">S6</text>
+    <text x="484" y="1013" class="nt">Save your progress (optional)</text>
+    <text x="456" y="1035" class="nm">Email / social / continue as guest (30-day cookie)</text>
+    <text x="456" y="1052" class="q" fill="#2f5de8">Enables cross-coach continuity — user can switch coaches without losing data</text>
+  </g>
+  <path d="M 640 1065 L 640 1090" class="cs" marker-end="url(#arr)"/>
+
+  <!-- PERSONALIZED HOME -->
+  <g>
+    <rect x="60" y="1095" width="1200" height="280" rx="12" fill="#ffffff" stroke="#121926" stroke-width="2"/>
+    <rect x="60" y="1095" width="180" height="26" rx="4" fill="#121926"/>
+    <text x="150" y="1113" class="sn" text-anchor="middle" style="font-size:12px">PERSONALIZED HOME</text>
+    <text x="80" y="1145" class="nt" style="font-size:16px">"Welcome, [name]. Here's what we found for you." · Primary coach card + 2 next steps</text>
+    <text x="80" y="1164" class="nm">Cross-coach suggestions appear in "You might also explore" rail — never as primary</text>
+
+    <!-- 6 home example cards -->
+    <rect x="80" y="1180" width="185" height="180" rx="8" fill="#e6f4f2" stroke="#0f766e"/>
+    <text x="90" y="1198" class="q" fill="#0f766e" style="font-weight:700">Settlement</text>
+    <text x="90" y="1216" class="q">· City resources</text>
+    <text x="90" y="1231" class="q">· Housing / health guides</text>
+    <text x="90" y="1246" class="q">· Language finder</text>
+    <text x="90" y="1261" class="q">· Community events</text>
+    <text x="90" y="1290" class="q" fill="#475569" style="font-weight:600">Cross-coach suggestion:</text>
+    <text x="90" y="1307" class="q" fill="#475569">"Planning to work?</text>
+    <text x="90" y="1322" class="q" fill="#475569">Explore Trades or Tech."</text>
+
+    <rect x="275" y="1180" width="185" height="180" rx="8" fill="#fdf3e1" stroke="#b45309"/>
+    <text x="285" y="1198" class="q" fill="#b45309" style="font-weight:700">Job · General</text>
+    <text x="285" y="1216" class="q">· Resume · Cover Letter</text>
+    <text x="285" y="1231" class="q">· Soft Skills · Interview</text>
+    <text x="285" y="1246" class="q">· NOC Finder</text>
+    <text x="285" y="1261" class="q">· Smart Job Tracker</text>
+    <text x="285" y="1290" class="q" fill="#475569" style="font-weight:600">Cross-coach suggestion:</text>
+    <text x="285" y="1307" class="q" fill="#475569">"Healthcare? Trades? Tech?</text>
+    <text x="285" y="1322" class="q" fill="#475569">Specialized help available."</text>
+
+    <rect x="470" y="1180" width="185" height="180" rx="8" fill="#f3eafd" stroke="#9333ea"/>
+    <text x="480" y="1198" class="q" fill="#9333ea" style="font-weight:700">Healthcare (HC)</text>
+    <text x="480" y="1216" class="q">· Your pathway</text>
+    <text x="480" y="1231" class="q">· Cost / time compare</text>
+    <text x="480" y="1246" class="q">· Financing + WES</text>
+    <text x="480" y="1261" class="q">· Eligible jobs</text>
+    <text x="480" y="1290" class="q" fill="#475569" style="font-weight:600">Cross-coach suggestion:</text>
+    <text x="480" y="1307" class="q" fill="#475569">"Considering a pivot?</text>
+    <text x="480" y="1322" class="q" fill="#475569">Compare with Trades/Tech."</text>
+
+    <rect x="665" y="1180" width="185" height="180" rx="8" fill="#fde7d9" stroke="#c2410c"/>
+    <text x="675" y="1198" class="q" fill="#c2410c" style="font-weight:700">Trades (TC) · NEW</text>
+    <text x="675" y="1216" class="q">· Your trade path</text>
+    <text x="675" y="1231" class="q">· Red Seal roadmap</text>
+    <text x="675" y="1246" class="q">· Apprenticeship sponsors</text>
+    <text x="675" y="1261" class="q">· Foreign-trained bridge</text>
+    <text x="675" y="1290" class="q" fill="#475569" style="font-weight:600">Cross-coach suggestion:</text>
+    <text x="675" y="1307" class="q" fill="#475569">"Also exploring tech?</text>
+    <text x="675" y="1322" class="q" fill="#475569">Trade + tech hybrids exist."</text>
+
+    <rect x="860" y="1180" width="185" height="180" rx="8" fill="#dff0fb" stroke="#0369a1"/>
+    <text x="870" y="1198" class="q" fill="#0369a1" style="font-weight:700">Tech (TechC) · NEW</text>
+    <text x="870" y="1216" class="q">· Portfolio/cert roadmap</text>
+    <text x="870" y="1231" class="q">· ATS-ready resume</text>
+    <text x="870" y="1246" class="q">· Tech interview prep</text>
+    <text x="870" y="1261" class="q">· Employer partners</text>
+    <text x="870" y="1290" class="q" fill="#475569" style="font-weight:600">Cross-coach suggestion:</text>
+    <text x="870" y="1307" class="q" fill="#475569">"Healthcare IT = both.</text>
+    <text x="870" y="1322" class="q" fill="#475569">Explore HC + Tech."</text>
+
+    <rect x="1055" y="1180" width="185" height="180" rx="8" fill="#fde8e8" stroke="#b91c1c"/>
+    <text x="1065" y="1198" class="q" fill="#b91c1c" style="font-weight:700">Veteran</text>
+    <text x="1065" y="1216" class="q">· Skill map (mil→civ)</text>
+    <text x="1065" y="1231" class="q">· VAC benefits</text>
+    <text x="1065" y="1246" class="q">· Employer partners</text>
+    <text x="1065" y="1261" class="q">· Pick a coach (HC/TC/TechC)</text>
+    <text x="1065" y="1290" class="q" fill="#475569" style="font-weight:600">Cross-coach suggestion:</text>
+    <text x="1065" y="1307" class="q" fill="#475569">Veterans modifier</text>
+    <text x="1065" y="1322" class="q" fill="#475569">applies to all coaches.</text>
+  </g>
+
+  <!-- Bottom note -->
+  <g>
+    <rect x="60" y="1400" width="1200" height="230" rx="12" fill="#f1f5f9" stroke="#475569" stroke-dasharray="4 3"/>
+    <text x="80" y="1428" class="nt" style="font-size:16px">Key mechanic: one profile, many coaches</text>
+    <text x="80" y="1452" class="q">· A user can "enroll" in multiple coaches. Their primary coach is the one selected at S2b; secondary coaches appear as subdued tiles.</text>
+    <text x="80" y="1470" class="q">· Switching primary coach is a 1-tap action ("Focus on Trades instead") — no re-onboarding; only the specific branch questions re-fire.</text>
+    <text x="80" y="1488" class="q">· Profile schema (v2) stores answers per-coach plus shared universal fields. Adding Coach N+1 is a schema extension, not a migration.</text>
+    <text x="80" y="1506" class="q">· Cross-coach hooks: healthcare interest during Tech onboarding surfaces Health-IT roles; trades interest during HC onboarding surfaces biomedical technician &amp; medical device paths.</text>
+    <text x="80" y="1530" class="nt" style="font-size:15px;fill:#2f5de8">Completion targets, split by path length:</text>
+    <text x="80" y="1552" class="q">· Settlement / Veteran / Explorer: ≥70% (6 screens, same as v1)</text>
+    <text x="80" y="1570" class="q">· Job seeker / HC / Trades / Tech: ≥65% (7 screens, absorbs the +1 S2b tap)</text>
+    <text x="80" y="1590" class="q">· If S2b completion rate is materially lower than the rest, run the "coach-as-tool" A/B variant (hide the selector, infer via field autocomplete on Job General).</text>
+    <text x="80" y="1612" class="nm" style="font-size:12px">Detailed branch specs for Trades and Tech below.</text>
+  </g>
+
+</svg>
+  </div>
+</div>
+
+<!-- SECTION 3: TRADES COACH BRANCH DETAIL -->
+<div class="section">
+  <h2><span class="num">3</span>Trades Coach (TC) — branch detail</h2>
+  <p class="lead">Trades differs from healthcare in three important ways: <strong>apprenticeship is the gate, not licensing alone</strong>; the sponsor (a journeyperson who'll train you) is often the real bottleneck; and foreign-trained tradespeople face a different credential-recognition process (provincial trade certification, challenge exams).</p>
+
+  <div class="twocol">
+    <div class="branch-detail trades">
+      <span class="badge">S4 · Trades — Canadian entrant</span>
+      <h4>Questions (4, ~60s)</h4>
+      <div class="qs">
+        <p><strong>1. Which trade?</strong> Dropdown with Red Seal indicator. Groups: Construction (electrician, plumber, carpenter, HVAC), Industrial (millwright, welder, industrial mechanic), Motive Power (auto, truck/transport, heavy equipment), Service (cook, hairstylist, horticulturist), Not sure yet.</p>
+        <p><strong>2. Apprenticeship status.</strong> None yet · Looking for a sponsor · Registered as apprentice · Have journeyperson hours · Red Seal earned.</p>
+        <p><strong>3. Target province.</strong> Confirms from S3. Matters because trade certification is provincial; interprovincial mobility requires Red Seal.</p>
+        <p><strong>4. What's the biggest block right now?</strong> Finding a sponsor · Paying for tools/school · Immigration status · Language · Not sure which trade.</p>
+      </div>
+      <h4 style="margin-top:12px">Routes to</h4>
+      <ul class="tight">
+        <li>Your trade pathway (schooling + hours + exam sequence for the chosen trade × province)</li>
+        <li>Apprenticeship sponsor finder (employer partners + union halls + Skilled Trades Ontario registry)</li>
+        <li>Financing for tools + schooling (Windmill Trades Loan — yes, it exists)</li>
+        <li>Pre-apprenticeship programs (union-run, CICan members, provincial bridging)</li>
+        <li>Women-in-trades programs (if S5 equity flag set)</li>
+      </ul>
+    </div>
+
+    <div class="branch-detail trades">
+      <span class="badge">S4 · Trades — foreign-trained variant (from S2=C)</span>
+      <h4>Additional questions (+2)</h4>
+      <div class="qs">
+        <p><strong>5. Country trained in.</strong></p>
+        <p><strong>6. Recognition status.</strong> None · Working on challenge exam · Provincial certification earned · Journeyperson recognized · Unsure.</p>
+        <p style="color:var(--muted);font-size:12.5px;margin-top:6px">Immigration status still captured from HC-style flow since it affects employer eligibility and loan options.</p>
+      </div>
+      <h4 style="margin-top:12px">Unique routes</h4>
+      <ul class="tight">
+        <li>Provincial challenge-exam pathway (e.g., Ontario Trades Qualifier)</li>
+        <li>Credential assessment via Red Seal pathway + provincial assessors</li>
+        <li>"Work now, certify later" alt-paths (e.g., construction labour while qualifying — critical for income-pressured users)</li>
+        <li>Warm handoffs to Windmill Trades Loan + settlement supports</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Trades-specific personalization hooks</h3>
+  <table>
+    <thead><tr><th>Trigger</th><th>Personalization</th></tr></thead>
+    <tbody>
+      <tr><td>Red Seal trade + interprovincial intent</td><td>Highlight national mobility + show cross-province comparison</td></tr>
+      <tr><td>No sponsor + urban resident</td><td>Prioritize union-hall + employer-partner apprenticeships</td></tr>
+      <tr><td>No sponsor + rural resident</td><td>Prioritize employer-sponsored pre-apprenticeships (smaller employer network)</td></tr>
+      <tr><td>Women or Indigenous equity flag (S5)</td><td>Surface targeted programs (e.g., Women Unlimited, BC Centre for Women in the Trades, Indigenous trades bursaries)</td></tr>
+      <tr><td>Foreign-trained + tool-cost barrier</td><td>Windmill Trades Loan surfaced immediately on home</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SECTION 4: TECH COACH BRANCH DETAIL -->
+<div class="section">
+  <h2><span class="num">4</span>Tech Coach (TechC) — branch detail</h2>
+  <p class="lead">Tech has no licensing gate — the real barrier is <strong>portfolio, Canadian experience, and employer trust</strong>. That makes the onboarding questions very different from HC or Trades. Because tech is less credential-gated, it's also the most reasonable place to test "coach-as-tool" (option C above) if you want to simplify.</p>
+
+  <div class="twocol">
+    <div class="branch-detail tech">
+      <span class="badge">S4 · Tech — general entrant</span>
+      <h4>Questions (5, ~75s)</h4>
+      <div class="qs">
+        <p><strong>1. Tech field.</strong> Software engineering · Data (analyst/scientist/engineer) · Cybersecurity · IT support/network · Design (UX/UI) · Product mgmt · Other. (Allows "multi" since tech titles blur.)</p>
+        <p><strong>2. Experience level.</strong> No formal experience · Self-taught/bootcamp · 0-2 yrs · 3-5 yrs · 6+ yrs.</p>
+        <p><strong>3. Portfolio / proof-of-work state.</strong> Nothing yet · Some projects · GitHub/portfolio · Paid work samples · Full track record. (Drives most of the home-tile logic.)</p>
+        <p><strong>4. Canadian experience?</strong> Y/N. Critical because "Canadian experience barrier" is the #1 blocker for foreign tech pros.</p>
+        <p><strong>5. Top barrier.</strong> Portfolio · Canadian experience · Network · ATS/resume · Interview prep · Work permit.</p>
+      </div>
+      <h4 style="margin-top:12px">Routes to</h4>
+      <ul class="tight">
+        <li>Portfolio &amp; certification roadmap (AWS/Azure/CompTIA/Google/Meta paths; GitHub project starter kits)</li>
+        <li>Tech-specific resume coach (ATS-optimized + keyword alignment)</li>
+        <li>Technical interview practice (Leetcode-style + behavioural + systems design)</li>
+        <li>NPower Canada Junior Analyst programs (Alliance partner!)</li>
+        <li>Canadian-experience tactics (open source contributions, hackathons, bootcamp capstones with real clients)</li>
+        <li>Accenture + Alliance employer partner openings</li>
+      </ul>
+    </div>
+
+    <div class="branch-detail tech">
+      <span class="badge">S4 · Tech — foreign-experience variant (from S2=C)</span>
+      <h4>Shifted question set</h4>
+      <div class="qs">
+        <p>Same core 5 but with different emphasis:</p>
+        <p><strong>+ Country of most recent tech experience.</strong></p>
+        <p><strong>+ Equivalency of role.</strong> Did your role abroad map to a Canadian title? (Useful for NOC matching.)</p>
+        <p><strong>+ Immigration status</strong> becomes more prominent — employer sponsorship ability and LMIA-aware routing kicks in.</p>
+      </div>
+      <h4 style="margin-top:12px">Unique routes</h4>
+      <ul class="tight">
+        <li>Canadian-title mapping (e.g., "Software Architect (India)" → NOC 21311 Computer engineer)</li>
+        <li>Bridging programs for tech professionals (ACCES, TRIEC networks — tech-specific cohorts)</li>
+        <li>Employer-partner jobs flagged "Open to foreign experience / will sponsor"</li>
+        <li>"Canadian experience in 3 months" playbook: strategic open-source + local meetup + contract work path</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="k">Tech-specific consideration</div>
+    <p>Unlike healthcare and trades, <strong>tech demand is cyclical and currently soft</strong>. The onboarding should set expectations calibrated to the market — "here's what's realistic in 3 months vs. 12 months" — or it will produce frustrated users. Consider an "honest market" micro-card on the Tech home that refreshes quarterly with labour market data (Lightcast API is already in your partner ecosystem).</p>
+  </div>
+</div>
+
+<!-- SECTION 5: SEGMENT × CONTENT MATRIX (UPDATED) -->
+<div class="section">
+  <h2><span class="num">5</span>Updated segment × content matrix</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:160px">Segment</th>
+        <th>Shown first</th>
+        <th>One-tap away</th>
+        <th>Hidden by default</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="seg"><span class="pill settle">Settlement</span></td>
+        <td>Settlement hub · housing · health · language</td>
+        <td>Resume · Soft Skills · job coaches if interest shown</td>
+        <td>HC/TC/TechC pathways · veteran</td></tr>
+      <tr><td class="seg"><span class="pill job">Job · General</span></td>
+        <td>Resume · Cover Letter · Soft Skills · Interview · NOC · Smart Job Tracker</td>
+        <td>Settlement · specialized coaches if field match detected</td>
+        <td>HC/TC/TechC branches (unless opted into)</td></tr>
+      <tr><td class="seg"><span class="pill hc">Healthcare (HC)</span></td>
+        <td>HC pathway · compare · financing · WES · eligible jobs</td>
+        <td>Resume/Cover Letter "while you wait" · alt-career (non-licensed)</td>
+        <td>Trades / Tech (unless cross-coach flagged)</td></tr>
+      <tr><td class="seg"><span class="pill trades">Trades (TC)</span></td>
+        <td>Trade pathway · apprenticeship finder · Skilled Trades registry · union &amp; employer</td>
+        <td>Resume for trades · soft skills (safety focus) · Windmill Trades Loan</td>
+        <td>Tech / HC (unless cross-coach)</td></tr>
+      <tr><td class="seg"><span class="pill tech">Tech (TechC)</span></td>
+        <td>Portfolio/cert roadmap · ATS resume · tech interview prep · employer partners</td>
+        <td>NPower Canada · bootcamps · Canadian-experience playbook</td>
+        <td>Trades / HC (unless cross-coach)</td></tr>
+      <tr><td class="seg"><span class="pill vet">Veteran</span></td>
+        <td>Skill map · VAC · employer partners · coach selector tile (HC/TC/TechC)</td>
+        <td>All coach-specific tools once coach chosen</td>
+        <td>General newcomer content</td></tr>
+      <tr><td class="seg"><span class="pill explore">Explorer</span></td>
+        <td>Guided tour · "Take 60s to personalize" · top 5 tools</td>
+        <td>All tools, de-emphasized</td>
+        <td>Nothing hidden</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SECTION 6: SHARED ARCHITECTURE INSIGHT -->
+<div class="section">
+  <h2><span class="num">6</span>The shared-architecture insight</h2>
+  <p class="lead">Every coach has the same skeleton. The differentiator is the pathway-logic module — everything else is shared.</p>
+
+  <div class="threecol">
+    <div class="card" style="border-top:4px solid var(--accent)">
+      <h3 style="margin-top:0">Shared platform</h3>
+      <ul class="tight">
+        <li>Landing + language (S1)</li>
+        <li>Intent fork (S2)</li>
+        <li>Universal context (S3)</li>
+        <li>Equity screen (S5)</li>
+        <li>Save progress (S6)</li>
+        <li>Profile v2 store</li>
+        <li>Personalized home framework</li>
+        <li>Resume + Cover Letter engines</li>
+        <li>Soft Skills Quiz · Interview Practice</li>
+        <li>NOC Code Finder · language tools</li>
+        <li>Alliance partner directory</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:4px solid var(--seg-hc)">
+      <h3 style="margin-top:0">Per-coach modules</h3>
+      <ul class="tight">
+        <li>Coach-specific S4 question set</li>
+        <li>Pathway-logic engine (rules/data per vertical)</li>
+        <li>Credential/skill map for the vertical</li>
+        <li>Eligibility filter for jobs</li>
+        <li>Partner shortlist (Windmill/WES/NPower/Skilled Trades etc.)</li>
+        <li>Coach-specific home tiles</li>
+        <li>Coach-specific content (pre-arrival / in-Canada)</li>
+      </ul>
+    </div>
+
+    <div class="card" style="border-top:4px solid var(--seg-trades)">
+      <h3 style="margin-top:0">What gets added when launching Coach N+1</h3>
+      <ul class="tight">
+        <li>1 card in S2b</li>
+        <li>1 new S4 branch (4–5 questions)</li>
+        <li>Pathway-logic data (biggest lift — real content work)</li>
+        <li>Partner integration list</li>
+        <li>Home-page template (inherits from shared framework)</li>
+        <li>Profile schema extension (no migration; additive)</li>
+      </ul>
+      <p style="margin-top:10px;font-size:13px;color:var(--muted)"><em>Nothing in the shared platform changes. That's the point.</em></p>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 7: IMPLICATIONS & RECOMMENDATIONS -->
+<div class="section">
+  <h2><span class="num">7</span>Implications for your roadmap</h2>
+  <table>
+    <thead><tr><th style="width:160px">Horizon</th><th>What to do now because of this</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Q2 2026 (in flight)</strong></td><td>Build Profile v2 schema with a <strong>coach-agnostic shape</strong> — "primary coach", "secondary coaches", per-coach answer bag. This is ~1-2 days of schema design but prevents a migration when TC/TechC land. Matches your stated principle of avoiding migrations.</td></tr>
+      <tr><td><strong>Q3 2026</strong></td><td>Ship S2b as a "coach selector" component with only HC + Other initially. The component is already architected for N cards — adding TC/TechC becomes a copy change.</td></tr>
+      <tr><td><strong>Q4 2026</strong></td><td>Build <strong>Trades Coach Phase 1</strong> as the second coach. Trades has the most mature partner ecosystem (Skilled Trades Ontario, Windmill, existing apprenticeship systems) and the strongest funder narrative (labour market demand mirrors healthcare).</td></tr>
+      <tr><td><strong>2027 exploratory</strong></td><td>Tech Coach. Labour market softness argues for not being first to market here. Use 2026 to collect field-of-interest data from the Job · General branch — it will tell you whether tech demand among your users justifies a dedicated coach.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="k">What I'd push back on if you asked</div>
+    <p>Tech Coach before Trades Coach would be a strategic mistake: Trades has better partner infrastructure, clearer funding stories (FCR-style trades equivalents exist), a more acute labour shortage, and clearer outcomes to measure. Tech's portfolio/network problems are hard to solve digitally without employer co-investment, and Accenture's own tech hiring ebbs. Lead with Trades; let Tech follow once the architecture proves it out.</p>
+  </div>
+</div>
+
+<!-- SECTION 8: OPEN QUESTIONS -->
+<div class="section">
+  <h2><span class="num">8</span>Open questions for the team</h2>
+  <table>
+    <thead><tr><th style="width:40px">#</th><th>Question</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Do we brand each coach as a named product (Healthcare Coach, Trades Coach, Tech Coach) or as modules inside Welcome Coach?</td><td>Affects S2b wording, URL structure, SEO, partner co-marketing, and funder narrative. The 2-step fork works either way but the visual treatment differs.</td></tr>
+      <tr><td>2</td><td>Is "veteran" cross-cutting (a modifier on any coach) or its own path (as shown in v1)?</td><td>Multi-coach design tips toward modifier: a veteran electrician belongs in Trades + veteran lens. Stand-alone vet branch may become redundant. Recommend revisiting in v3.</td></tr>
+      <tr><td>3</td><td>Do foreign-trained trades and tech workers warrant their own S4 branches, or should the "credentialed abroad" flag be a modifier on the general coach branch?</td><td>Matters for content burden (one pathway engine per coach or two). Recommendation: modifier for trades (small delta); consider separate branch for tech (larger delta due to immigration/LMIA).</td></tr>
+      <tr><td>4</td><td>Should users be able to enroll in multiple coaches explicitly, or is "primary coach + cross-coach suggestions" enough?</td><td>Multi-coach enrollment doubles engagement surface but complicates home UX. Recommend single primary with easy switching for v2; revisit based on data.</td></tr>
+      <tr><td>5</td><td>What's the cross-coach intelligence layer? Rules-based (e.g., healthcare field + IT experience → Health-IT suggestion) or ML-based?</td><td>Rules-based is sufficient for 3-coach launch. ML only becomes worth it at 5+ coaches with 6+ months of cross-coach behavioural data.</td></tr>
+      <tr><td>6</td><td>Should white-label Alliance partners be able to launch their own co-branded "coach"?</td><td>Example: an Indigenous-serving org could launch "Indigenous Careers Coach" as a specialized Trades/HC hybrid. Affects Admin Tool v2 scope.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer-note">
+  v2 extends v1 — it does not replace it. If the team is happy with the v1 flow for HC launch, v2 is the direction to evolve to as Trades and Tech come into scope. The two biggest commits to make now are: <strong>(a)</strong> choose the 2-step fork architecture, and <strong>(b)</strong> design Profile v2 to be coach-agnostic from day 1.
+</div>
+
+</div>
+</body>
+</html>
